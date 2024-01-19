@@ -11,6 +11,7 @@ fastapi = "^0.109.0"
 alembic = "^1.13.1"
 psycopg2 = "^2.9.9"
 sqlalchemy = "^2.0.25"
+uvicorn = "^0.26.0"
 
 
 [build-system]
