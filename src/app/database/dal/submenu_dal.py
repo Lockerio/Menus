@@ -17,6 +17,9 @@ class SubmenuDAO:
     def get_submenu(self, submenu_id: str):
         return self.db_session.query(Submenu).filter(Submenu.id == submenu_id).first()
 
+    def get_submenu_by_menu_id(self, menu_id: str):
+        return self.db_session.query(Submenu).filter(Submenu.menu_id == menu_id).all()
+
     def update_submenu(self, submenu_id: str, title: str, description: str):
         submenu = self.get_submenu(submenu_id)
         if submenu:
