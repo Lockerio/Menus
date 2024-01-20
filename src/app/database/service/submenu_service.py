@@ -1,11 +1,13 @@
 from sqlalchemy.orm import Session
 
 from app.database.dal.submenu_dal import SubmenuDAO
+from app.database.service.dish_service import DishService
 
 
 class SubmenuService:
     def __init__(self, db_session: Session):
         self.submenu_dao = SubmenuDAO(db_session)
+        self.dish_service = DishService(db_session)
         self.MAX_SUBMENUS_AMOUNT = 2
 
     def create(self, title: str, description: str, menu_id: str):
@@ -15,13 +17,16 @@ class SubmenuService:
             raise ValueError("Number of submenus exceeds the maximum allowed "
                              f"{self.MAX_SUBMENUS_AMOUNT}.")
         else:
-            self.submenu_dao.create_submenu(title, description, menu_id)
+            return self.submenu_dao.create_submenu(title, description, menu_id)
 
     def read(self, submenu_id: str):
-        self.submenu_dao.get_submenu(submenu_id)
+        return self.submenu_dao.get_submenu(submenu_id)
 
-    def update(self):
-        pass
+    def update(self, title: str, description: str, menu_id: str):
+        return self.submenu_dao.update_submenu(title, description, menu_id)
 
-    def delete(self):
-        pass
+    def delete(self, submenu_id: str):
+        submenu = self.submenu_dao.get_submenu(submenu_id)
+
+        for dish in submenu.dishes:
+            self.dish_service.delete(dish)

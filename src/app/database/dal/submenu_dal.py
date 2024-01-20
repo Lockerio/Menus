@@ -20,8 +20,8 @@ class SubmenuDAO:
     def get_submenu_by_menu_id(self, menu_id: str):
         return self.db_session.query(Submenu).filter(Submenu.menu_id == menu_id).all()
 
-    def update_submenu(self, submenu_id: str, title: str, description: str):
-        submenu = self.get_submenu(submenu_id)
+    def update_submenu(self, title: str, description: str, menu_id: str):
+        submenu = self.get_submenu(menu_id)
         if submenu:
             submenu.title = title
             submenu.description = description

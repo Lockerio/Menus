@@ -15,13 +15,13 @@ class DishService:
             raise ValueError("Number of dishes exceeds the maximum allowed "
                              f"{self.MAX_DISHES_AMOUNT}.")
         else:
-            self.dish_dao.create_dish(title, description, price, submenu_id)
+            return self.dish_dao.create_dish(title, description, price, submenu_id)
 
     def read(self, dish_id: str):
-        self.dish_dao.get_dish(dish_id)
+        return self.dish_dao.get_dish(dish_id)
 
     def update(self, title: str, description: str, price: str, submenu_id: str):
-        self.dish_dao.update_dish(title, description, price, submenu_id)
+        return self.dish_dao.update_dish(title, description, price, submenu_id)
 
     def delete(self, dish_id: str):
-        self.dish_dao.delete_dish(dish_id)
+        return self.dish_dao.delete_dish(dish_id)
