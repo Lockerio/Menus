@@ -22,6 +22,9 @@ class SubmenuService:
     def read(self, submenu_id: str):
         return self.submenu_dao.get_submenu(submenu_id)
 
+    def read_all(self):
+        return self.submenu_dao.get_all_submenus()
+
     def update(self, title: str, description: str, menu_id: str):
         return self.submenu_dao.update_submenu(title, description, menu_id)
 

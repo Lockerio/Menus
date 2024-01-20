@@ -17,6 +17,9 @@ class MenuDAO:
     def get_menu(self, menu_id: str):
         return self.db_session.query(Menu).filter(Menu.id == menu_id).first()
 
+    def get_all_menus(self):
+        return self.db_session.query(Menu).all()
+
     def update_menu(self, menu_id: str, title: str, description: str):
         menu = self.get_menu(menu_id)
         if menu:

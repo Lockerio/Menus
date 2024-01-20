@@ -17,6 +17,9 @@ class DishDAO:
     def get_dish(self, dish_id: str):
         return self.db_session.query(Dish).filter(Dish.id == dish_id).first()
 
+    def get_all_dishes(self):
+        return self.db_session.query(Dish).all()
+
     def get_dishes_by_submenu_id(self, submenu_id: str):
         return self.db_session.query(Dish).filter(Dish.submenu_id == submenu_id).all()
 

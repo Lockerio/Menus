@@ -15,6 +15,9 @@ class MenuService:
     def read(self, menu_id: str):
         return self.menu_dao.get_menu(menu_id)
 
+    def read_all(self):
+        return self.menu_dao.get_all_menus()
+
     def update(self, title: str, description: str, menu_id: str):
         return self.menu_dao.update_menu(menu_id, title, description)
 

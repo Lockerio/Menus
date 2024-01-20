@@ -20,6 +20,9 @@ class DishService:
     def read(self, dish_id: str):
         return self.dish_dao.get_dish(dish_id)
 
+    def read_all(self):
+        return self.dish_dao.get_all_dishes()
+
     def update(self, title: str, description: str, price: str, submenu_id: str):
         return self.dish_dao.update_dish(title, description, price, submenu_id)
 
