@@ -35,3 +35,9 @@ class MenuDAO:
             self.db_session.delete(menu)
             self.db_session.commit()
         return menu
+
+    def delete_menu_by_obj(self, menu: Menu):
+        if menu:
+            self.db_session.delete(menu)
+            self.db_session.commit()
+        return menu
