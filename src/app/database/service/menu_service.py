@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.database.dal.menu_dal import MenuDAO
+from app.database.models import Menu
 from app.database.service.submenu_service import SubmenuService
 
 
@@ -21,10 +22,8 @@ class MenuService:
     def update(self, title: str, description: str, menu_id: str):
         return self.menu_dao.update_menu(menu_id, title, description)
 
-    def delete(self, menu_id: str):
-        menu = self.menu_dao.get_menu(menu_id)
-
+    def delete(self, menu: Menu):
         for submenu in menu.submenus:
-            self.submenu_service.delete(submenu.id)
+            self.submenu_service.delete(submenu)
 
         return self.menu_dao.delete_menu_by_obj(menu)

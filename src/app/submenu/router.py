@@ -18,10 +18,16 @@ def create_submenu(
         target_menu_id: str = Path(..., title="Target Menu ID"),
         db: Session = Depends(get_db)
 ):
+    menu_service = MenuService(db)
     submenu_service = SubmenuService(db)
 
     try:
-        submenu = submenu_service.create(submenu_data.title, submenu_data.description, target_menu_id)
+        menu = menu_service.read(target_menu_id)
+        if menu:
+            submenu = submenu_service.create(submenu_data.title, submenu_data.description, target_menu_id)
+        else:
+            raise HTTPException(status_code=500, detail=f"There is no menu with id {target_menu_id}")
+
     except IntegrityError:
         raise HTTPException(status_code=500, detail="Invalid menu id")
     except DataError:
@@ -125,7 +131,7 @@ def delete_submenu(
 
     if submenu in submenus:
         try:
-            submenu_service.delete(submenu.id)
+            submenu_service.delete(submenu)
         except AttributeError:
             raise HTTPException(status_code=500, detail="Something went wrong")
 

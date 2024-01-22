@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.database.dal.dish_dal import DishDAO
+from app.database.models import Dish
 
 
 class DishService:
@@ -23,8 +24,11 @@ class DishService:
     def read_all(self):
         return self.dish_dao.get_all_dishes()
 
+    def read_by_submenu_id(self, submenu_id: str):
+        return self.dish_dao.get_dishes_by_submenu_id(submenu_id)
+
     def update(self, title: str, description: str, price: str, submenu_id: str):
         return self.dish_dao.update_dish(title, description, price, submenu_id)
 
-    def delete(self, dish_id: str):
-        return self.dish_dao.delete_dish(dish_id)
+    def delete(self, dish: Dish):
+        return self.dish_dao.delete_dish_by_obj(dish)

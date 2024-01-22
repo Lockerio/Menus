@@ -97,7 +97,7 @@ def delete_menu(
     menu_service = MenuService(db)
 
     try:
-        menu_service.delete(target_menu_id)
+        menu_service.delete(menu_service.read(target_menu_id))
     except AttributeError:
         raise HTTPException(status_code=404, detail="Something went wrong")
 

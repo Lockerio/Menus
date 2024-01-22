@@ -39,3 +39,9 @@ class DishDAO:
             self.db_session.delete(dish)
             self.db_session.commit()
         return dish
+
+    def delete_dish_by_obj(self, dish: Dish):
+        if dish:
+            self.db_session.delete(dish)
+            self.db_session.commit()
+        return dish
