@@ -51,7 +51,6 @@ def read_menu(
 
     try:
         menu = menu_service.read(target_menu_id)
-
     except:
         raise HTTPException(status_code=404, detail="Something went wrong")
 
@@ -59,7 +58,9 @@ def read_menu(
         return JSONResponse({
             "id": str(menu.id),
             "title": menu.title,
-            "description": menu.description
+            "description": menu.description,
+            "submenus_count": len(menu.submenus),
+            "dishes_count": sum(len(submenu.dishes) for submenu in menu.submenus)
         })
 
     raise HTTPException(status_code=404, detail="menu not found")

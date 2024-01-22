@@ -81,7 +81,8 @@ def read_submenu(
             "id": str(submenu.id),
             "title": submenu.title,
             "description": submenu.description,
-            "menu_id": str(submenu.menu_id)
+            "menu_id": str(submenu.menu_id),
+            "dishes_count": len(submenu.dishes)
         })
 
     raise HTTPException(status_code=404, detail="submenu not found")
