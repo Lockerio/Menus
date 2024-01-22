@@ -25,6 +25,6 @@ class MenuService:
         menu = self.menu_dao.get_menu(menu_id)
 
         for submenu in menu.submenus:
-            self.submenu_service.delete(submenu)
+            self.submenu_service.delete(submenu.id)
 
         return self.menu_dao.delete_menu_by_obj(menu)

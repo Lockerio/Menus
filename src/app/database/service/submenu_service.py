@@ -25,11 +25,16 @@ class SubmenuService:
     def read_all(self):
         return self.submenu_dao.get_all_submenus()
 
-    def update(self, title: str, description: str, menu_id: str):
-        return self.submenu_dao.update_submenu(title, description, menu_id)
+    def read_by_menu_id(self, menu_id: str):
+        return self.submenu_dao.get_submenu_by_menu_id(menu_id)
+
+    def update(self, title: str, description: str, submenu_id: str):
+        return self.submenu_dao.update_submenu(title, description, submenu_id)
 
     def delete(self, submenu_id: str):
         submenu = self.submenu_dao.get_submenu(submenu_id)
 
         for dish in submenu.dishes:
             self.dish_service.delete(dish)
+
+        return self.submenu_dao.delete_submenu_by_obj(submenu)
