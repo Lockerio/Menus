@@ -1,4 +1,4 @@
 from fastapi import APIRouter
 
 
-router = APIRouter()
+dish_router = APIRouter()

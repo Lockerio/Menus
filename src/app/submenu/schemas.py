@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 
-class MenuCreateUpdate(BaseModel):
+class SubmenuCreateUpdate(BaseModel):
     title: str
     description: str
