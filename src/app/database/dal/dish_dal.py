@@ -23,7 +23,7 @@ class DishDAO:
     def get_dishes_by_submenu_id(self, submenu_id: str):
         return self.db_session.query(Dish).filter(Dish.submenu_id == submenu_id).all()
 
-    def update_dish(self, dish_id: str, title: str, description: str, price: str):
+    def update_dish(self, title: str, description: str, price: str, dish_id: str):
         dish = self.get_dish(dish_id)
         if dish:
             dish.title = title

@@ -50,99 +50,105 @@ def create_dish(
     }, status_code=201)
 
 
-@dish_router.get("/menus/{target_menu_id}/submenus/")
-def read_dish(
+@dish_router.get("/menus/{target_menu_id}/submenus/{target_submenu_id}/dishes/")
+def read_dishes(
         target_menu_id: str = Path(..., title="Target Menu ID"),
+        target_submenu_id: str = Path(..., title="Target Submenu ID"),
         db: Session = Depends(get_db)
 ):
-    submenu_service = DishService(db)
-    submenus = submenu_service.read_by_submenu_id(target_menu_id)
+    dish_service = DishService(db)
+    dishes = dish_service.read_by_submenu_id(target_submenu_id)
 
     response = [{
-            "id": str(submenu.id),
-            "title": submenu.title,
-            "description": submenu.description,
-            "menu_id": str(submenu.menu_id)
+            "id": str(dish.id),
+            "title": dish.title,
+            "description": dish.description,
+            "price": dish.price,
+            "submenu_id": str(dish.submenu_id)
         }
-        for submenu in submenus
+        for dish in dishes
     ]
 
     return JSONResponse(response)
 
 
-@dish_router.get("/menus/{target_menu_id}/submenus/{target_submenu_id}")
+@dish_router.get("/menus/{target_menu_id}/submenus/{target_submenu_id}/dishes/{target_dish_id}")
 def read_dish(
         target_menu_id: str = Path(..., title="Target Menu ID"),
         target_submenu_id: str = Path(..., title="Target Submenu ID"),
+        target_dish_id: str = Path(..., title="Target Dish ID"),
         db: Session = Depends(get_db)
 ):
-    submenu_service = DishService(db)
-    submenus = submenu_service.read_by_menu_id(target_menu_id)
+    dish_service = DishService(db)
+    dishes = dish_service.read_by_submenu_id(target_submenu_id)
 
     try:
-        submenu = submenu_service.read(target_submenu_id)
-
+        dish = dish_service.read(target_dish_id)
     except:
         raise HTTPException(status_code=500, detail="Something went wrong")
 
-    if submenu in submenus:
+    if dish in dishes:
         return JSONResponse({
-            "id": str(submenu.id),
-            "title": submenu.title,
-            "description": submenu.description,
-            "menu_id": str(submenu.menu_id)
+            "id": str(dish.id),
+            "title": dish.title,
+            "description": dish.description,
+            "price": dish.price,
+            "submenu_id": str(dish.submenu_id)
         })
 
-    raise HTTPException(status_code=404, detail="submenu not found")
+    raise HTTPException(status_code=404, detail="dish not found")
 
 
-@dish_router.patch("/menus/{target_menu_id}/submenus/{target_submenu_id}")
+@dish_router.patch("/menus/{target_menu_id}/submenus/{target_submenu_id}/dishes/{target_dish_id}")
 def update_dish(
         menu_data: DishCreateUpdate,
         target_submenu_id: str = Path(..., title="Target Submenu ID"),
+        target_dish_id: str = Path(..., title="Target Dish ID"),
         target_menu_id: str = Path(..., title="Target Menu ID"),
         db: Session = Depends(get_db)
 ):
-    submenu_service = DishService(db)
-    submenus = submenu_service.read_by_menu_id(target_menu_id)
+    dish_service = DishService(db)
+    dishes = dish_service.read_by_submenu_id(target_submenu_id)
 
     try:
-        submenu = submenu_service.read(target_submenu_id)
+        dish = dish_service.read(target_dish_id)
     except:
         raise HTTPException(status_code=500, detail="Something went wrong")
 
-    if submenu in submenus:
-        submenu = submenu_service.update(menu_data.title, menu_data.description, target_submenu_id)
+    if dish in dishes:
+        dish = dish_service.update(menu_data.title, menu_data.description, menu_data.price, target_dish_id)
 
         return JSONResponse({
-            "id": str(submenu.id),
-            "title": submenu.title,
-            "description": submenu.description,
-            "menu_id": str(submenu.menu_id)
+            "id": str(dish.id),
+            "title": dish.title,
+            "description": dish.description,
+            "price": dish.price,
+            "submenu_id": str(dish.submenu_id)
         })
 
-    raise HTTPException(status_code=404, detail="submenu not found")
+    raise HTTPException(status_code=404, detail="dish not found")
 
 
-@dish_router.delete("/menus/{target_menu_id}/submenus/{target_submenu_id}")
+@dish_router.delete("/menus/{target_menu_id}/submenus/{target_submenu_id}/dishes/{target_dish_id}")
 def delete_dish(
         target_submenu_id: str = Path(..., title="Target Submenu ID"),
+        target_dish_id: str = Path(..., title="Target Dish ID"),
         target_menu_id: str = Path(..., title="Target Menu ID"),
         db: Session = Depends(get_db)
 ):
-    submenu_service = DishService(db)
-    submenus = submenu_service.read_by_menu_id(target_menu_id)
+    dish_service = DishService(db)
+    dishes = dish_service.read_by_submenu_id(target_submenu_id)
 
     try:
-        submenu = submenu_service.read(target_submenu_id)
+        dish = dish_service.read(target_dish_id)
     except:
         raise HTTPException(status_code=500, detail="Something went wrong")
 
-    if submenu in submenus:
+    if dish in dishes:
         try:
-            submenu_service.delete(submenu.id)
+            dish_service.delete(dish)
         except AttributeError:
             raise HTTPException(status_code=500, detail="Something went wrong")
 
         return JSONResponse(None)
-    raise HTTPException(status_code=404, detail="submenu not found")
+    raise HTTPException(status_code=404, detail="dish not found")
