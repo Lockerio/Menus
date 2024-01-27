@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.exc import IntegrityError, DataError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from app.database.db import get_db
@@ -13,25 +13,26 @@ submenu_router = APIRouter(prefix="/api/v1")
 
 
 @submenu_router.post("/menus/{target_menu_id}/submenus/")
-def create_submenu(
+async def create_submenu(
         submenu_data: SubmenuCreateUpdate,
         target_menu_id: str = Path(..., title="Target Menu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    menu_service = MenuService(db)
-    submenu_service = SubmenuService(db)
+    async with db.begin():
+        menu_service = MenuService(db)
+        submenu_service = SubmenuService(db)
 
-    try:
-        menu = menu_service.read(target_menu_id)
-        if menu:
-            submenu = submenu_service.create(submenu_data.title, submenu_data.description, target_menu_id)
-        else:
-            raise HTTPException(status_code=500, detail=f"There is no menu with id {target_menu_id}")
+        try:
+            menu = await menu_service.read(target_menu_id)
+            if menu:
+                submenu = await submenu_service.create(submenu_data.title, submenu_data.description, target_menu_id)
+            else:
+                raise HTTPException(status_code=500, detail=f"There is no menu with id {target_menu_id}")
 
-    except IntegrityError:
-        raise HTTPException(status_code=500, detail="Invalid menu id")
-    except DataError:
-        raise HTTPException(status_code=500, detail="Wrong type of id")
+        except IntegrityError:
+            raise HTTPException(status_code=500, detail="Invalid menu id")
+        except DataError:
+            raise HTTPException(status_code=500, detail="Wrong type of id")
 
     return JSONResponse({
         "id": str(submenu.id),
@@ -42,12 +43,13 @@ def create_submenu(
 
 
 @submenu_router.get("/menus/{target_menu_id}/submenus/")
-def read_submenus(
+async def read_submenus(
         target_menu_id: str = Path(..., title="Target Menu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    submenu_service = SubmenuService(db)
-    submenus = submenu_service.read_by_menu_id(target_menu_id)
+    async with db.begin():
+        submenu_service = SubmenuService(db)
+        submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
     response = [{
             "id": str(submenu.id),
@@ -62,19 +64,19 @@ def read_submenus(
 
 
 @submenu_router.get("/menus/{target_menu_id}/submenus/{target_submenu_id}")
-def read_submenu(
+async def read_submenu(
         target_menu_id: str = Path(..., title="Target Menu ID"),
         target_submenu_id: str = Path(..., title="Target Submenu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    submenu_service = SubmenuService(db)
-    submenus = submenu_service.read_by_menu_id(target_menu_id)
+    async with db.begin():
+        submenu_service = SubmenuService(db)
+        submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
-    try:
-        submenu = submenu_service.read(target_submenu_id)
-
-    except:
-        raise HTTPException(status_code=500, detail="Something went wrong")
+        try:
+            submenu = await submenu_service.read(target_submenu_id)
+        except:
+            raise HTTPException(status_code=500, detail="Something went wrong")
 
     if submenu in submenus:
         return JSONResponse({
@@ -89,52 +91,54 @@ def read_submenu(
 
 
 @submenu_router.patch("/menus/{target_menu_id}/submenus/{target_submenu_id}")
-def update_submenu(
+async def update_submenu(
         menu_data: SubmenuCreateUpdate,
         target_submenu_id: str = Path(..., title="Target Submenu ID"),
         target_menu_id: str = Path(..., title="Target Menu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    submenu_service = SubmenuService(db)
-    submenus = submenu_service.read_by_menu_id(target_menu_id)
+    async with db.begin():
+        submenu_service = SubmenuService(db)
+        submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
-    try:
-        submenu = submenu_service.read(target_submenu_id)
-    except:
-        raise HTTPException(status_code=500, detail="Something went wrong")
+        try:
+            submenu = await submenu_service.read(target_submenu_id)
+        except:
+            raise HTTPException(status_code=500, detail="Something went wrong")
 
-    if submenu in submenus:
-        submenu = submenu_service.update(menu_data.title, menu_data.description, target_submenu_id)
+        if submenu in submenus:
+            submenu = await submenu_service.update(menu_data.title, menu_data.description, target_submenu_id)
 
-        return JSONResponse({
-            "id": str(submenu.id),
-            "title": submenu.title,
-            "description": submenu.description,
-            "menu_id": str(submenu.menu_id)
-        })
+            return JSONResponse({
+                "id": str(submenu.id),
+                "title": submenu.title,
+                "description": submenu.description,
+                "menu_id": str(submenu.menu_id)
+            })
 
-    raise HTTPException(status_code=404, detail="submenu not found")
+        raise HTTPException(status_code=404, detail="submenu not found")
 
 
 @submenu_router.delete("/menus/{target_menu_id}/submenus/{target_submenu_id}")
-def delete_submenu(
+async def delete_submenu(
         target_submenu_id: str = Path(..., title="Target Submenu ID"),
         target_menu_id: str = Path(..., title="Target Menu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    submenu_service = SubmenuService(db)
-    submenus = submenu_service.read_by_menu_id(target_menu_id)
+    async with db.begin():
+        submenu_service = SubmenuService(db)
+        submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
-    try:
-        submenu = submenu_service.read(target_submenu_id)
-    except:
-        raise HTTPException(status_code=500, detail="Something went wrong")
-
-    if submenu in submenus:
         try:
-            submenu_service.delete(submenu)
-        except AttributeError:
+            submenu = await submenu_service.read(target_submenu_id)
+        except:
             raise HTTPException(status_code=500, detail="Something went wrong")
 
-        return JSONResponse(None)
-    raise HTTPException(status_code=404, detail="submenu not found")
+        if submenu in submenus:
+            try:
+                await submenu_service.delete(submenu)
+            except AttributeError:
+                raise HTTPException(status_code=500, detail="Something went wrong")
+
+            return JSONResponse(None)
+        raise HTTPException(status_code=404, detail="submenu not found")

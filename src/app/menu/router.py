@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Path, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import JSONResponse
 
 from app.database.db import get_db
@@ -11,12 +11,14 @@ menu_router = APIRouter(prefix="/api/v1")
 
 
 @menu_router.post("/menus/")
-def create_menu(
+async def create_menu(
         menu_data: MenuCreateUpdate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    menu_service = MenuService(db)
-    menu = menu_service.create(menu_data.title, menu_data.description)
+    async with db.begin():
+        menu_service = MenuService(db)
+        menu = await menu_service.create(menu_data.title, menu_data.description)
+
     return JSONResponse({
         "id": str(menu.id),
         "title": menu.title,
@@ -25,11 +27,12 @@ def create_menu(
 
 
 @menu_router.get("/menus/")
-def read_menus(
-        db: Session = Depends(get_db)
+async def read_menus(
+        db: AsyncSession = Depends(get_db)
 ):
-    menu_service = MenuService(db)
-    menus = menu_service.read_all()
+    async with db.begin():
+        menu_service = MenuService(db)
+        menus = await menu_service.read_all()
 
     response = [{
             "id": str(menu.id),
@@ -43,16 +46,17 @@ def read_menus(
 
 
 @menu_router.get("/menus/{target_menu_id}/")
-def read_menu(
+async def read_menu(
         target_menu_id: str = Path(..., title="Target Menu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    menu_service = MenuService(db)
+    async with db.begin():
+        menu_service = MenuService(db)
 
-    try:
-        menu = menu_service.read(target_menu_id)
-    except:
-        raise HTTPException(status_code=404, detail="Something went wrong")
+        try:
+            menu = await menu_service.read(target_menu_id)
+        except:
+            raise HTTPException(status_code=404, detail="Something went wrong")
 
     if menu:
         return JSONResponse({
@@ -67,18 +71,19 @@ def read_menu(
 
 
 @menu_router.patch("/menus/{target_menu_id}/")
-def update_menu(
+async def update_menu(
         menu_data: MenuCreateUpdate,
         target_menu_id: str = Path(..., title="Target Menu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    menu_service = MenuService(db)
+    async with db.begin():
+        menu_service = MenuService(db)
 
-    try:
-        menu = menu_service.update(menu_data.title, menu_data.description, target_menu_id)
+        try:
+            menu = await menu_service.update(menu_data.title, menu_data.description, target_menu_id)
 
-    except:
-        raise HTTPException(status_code=404, detail="Something went wrong")
+        except:
+            raise HTTPException(status_code=404, detail="Something went wrong")
 
     if menu:
         return JSONResponse({
@@ -91,15 +96,16 @@ def update_menu(
 
 
 @menu_router.delete("/menus/{target_menu_id}/")
-def delete_menu(
+async def delete_menu(
         target_menu_id: str = Path(..., title="Target Menu ID"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    menu_service = MenuService(db)
+    async with db.begin():
+        menu_service = MenuService(db)
 
-    try:
-        menu_service.delete(menu_service.read(target_menu_id))
-    except AttributeError:
-        raise HTTPException(status_code=404, detail="Something went wrong")
+        try:
+            await menu_service.delete(await menu_service.read(target_menu_id))
+        except AttributeError:
+            raise HTTPException(status_code=404, detail="Something went wrong")
 
     return JSONResponse(None)
