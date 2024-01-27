@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.dal.menu_dal import MenuDAO
 from app.database.models import Menu
@@ -6,24 +6,24 @@ from app.database.service.submenu_service import SubmenuService
 
 
 class MenuService:
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: AsyncSession):
         self.menu_dao = MenuDAO(db_session)
         self.submenu_service = SubmenuService(db_session)
 
-    def create(self, title: str, description: str):
-        return self.menu_dao.create_menu(title, description)
+    async def create(self, title: str, description: str):
+        return await self.menu_dao.create_menu(title, description)
 
-    def read(self, menu_id: str):
-        return self.menu_dao.get_menu(menu_id)
+    async def read(self, menu_id: str):
+        return await self.menu_dao.get_menu(menu_id)
 
-    def read_all(self):
-        return self.menu_dao.get_all_menus()
+    async def read_all(self):
+        return await self.menu_dao.get_all_menus()
 
-    def update(self, title: str, description: str, menu_id: str):
-        return self.menu_dao.update_menu(menu_id, title, description)
+    async def update(self, title: str, description: str, menu_id: str):
+        return await self.menu_dao.update_menu(menu_id, title, description)
 
-    def delete(self, menu: Menu):
+    async def delete(self, menu: Menu):
         for submenu in menu.submenus:
-            self.submenu_service.delete(submenu)
+            await self.submenu_service.delete(submenu)
 
-        return self.menu_dao.delete_menu_by_obj(menu)
+        return await self.menu_dao.delete_menu_by_obj(menu)
