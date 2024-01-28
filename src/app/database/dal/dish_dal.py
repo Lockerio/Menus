@@ -22,12 +22,13 @@ class DishDAO:
             return group_row[0]
 
     async def get_all_dishes(self):
-        return await self.db_session.execute(select(Dish)).scalars().all()
+        res = await self.db_session.execute(select(Dish))
+        return res.scalars().all()
 
     async def get_dishes_by_submenu_id(self, submenu_id: str):
         query = select(Dish).where(Dish.submenu_id == submenu_id)
-        res = await self.db_session.execute(query).scalars().all()
-        return res
+        res = await self.db_session.execute(query)
+        return res.scalars().all()
 
     async def update_dish(self, title: str, description: str, price: str, dish_id: str):
         dish = await self.get_dish(dish_id)

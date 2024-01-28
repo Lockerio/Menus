@@ -33,7 +33,7 @@ class SubmenuService:
         return await self.submenu_dao.update_submenu(title, description, submenu_id)
 
     async def delete(self, submenu: Submenu):
-        for dish in submenu.dishes:
+        dishes = await self.dish_service.read_by_submenu_id(submenu.id)
+        for dish in dishes:
             await self.dish_service.delete(dish)
-
         return await self.submenu_dao.delete_submenu_by_obj(submenu)

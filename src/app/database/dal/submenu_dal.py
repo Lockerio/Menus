@@ -22,12 +22,13 @@ class SubmenuDAO:
             return group_row[0]
 
     async def get_all_submenus(self):
-        return await self.db_session.execute(select(Submenu)).scalars().all()
+        res = await self.db_session.execute(select(Submenu))
+        return res.scalars().all()
 
     async def get_submenu_by_menu_id(self, menu_id: str):
         query = select(Submenu).where(Submenu.menu_id == menu_id)
-        res = await self.db_session.execute(query).scalars().all()
-        return res
+        res = await self.db_session.execute(query)
+        return res.scalars().all()
 
     async def update_submenu(self, title: str, description: str, submenu_id: str):
         submenu = await self.get_submenu(submenu_id)

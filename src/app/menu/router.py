@@ -52,19 +52,18 @@ async def read_menu(
 ):
     async with db.begin():
         menu_service = MenuService(db)
-
         try:
             menu = await menu_service.read(target_menu_id)
         except:
-            raise HTTPException(status_code=404, detail="Something went wrong")
+            raise HTTPException(status_code=500, detail="Something went wrong")
 
     if menu:
         return JSONResponse({
             "id": str(menu.id),
             "title": menu.title,
             "description": menu.description,
-            "submenus_count": len(menu.submenus),
-            "dishes_count": sum(len(submenu.dishes) for submenu in menu.submenus)
+            "submenus_count": menu.submenus_count,
+            "dishes_count": menu.dishes_count
         })
 
     raise HTTPException(status_code=404, detail="menu not found")
@@ -78,12 +77,12 @@ async def update_menu(
 ):
     async with db.begin():
         menu_service = MenuService(db)
+        menu = await menu_service.update(menu_data.title, menu_data.description, target_menu_id)
 
-        try:
-            menu = await menu_service.update(menu_data.title, menu_data.description, target_menu_id)
-
-        except:
-            raise HTTPException(status_code=404, detail="Something went wrong")
+        # try:
+        #     menu = await menu_service.update(menu_data.title, menu_data.description, target_menu_id)
+        # except:
+        #     raise HTTPException(status_code=500, detail="Something went wrong")
 
     if menu:
         return JSONResponse({
@@ -104,8 +103,8 @@ async def delete_menu(
         menu_service = MenuService(db)
 
         try:
-            await menu_service.delete(await menu_service.read(target_menu_id))
+            await menu_service.delete(await menu_service.read_obj(target_menu_id))
         except AttributeError:
-            raise HTTPException(status_code=404, detail="Something went wrong")
+            raise HTTPException(status_code=500, detail="Something went wrong")
 
     return JSONResponse(None)

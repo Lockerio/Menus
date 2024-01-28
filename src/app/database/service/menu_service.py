@@ -16,6 +16,9 @@ class MenuService:
     async def read(self, menu_id: str):
         return await self.menu_dao.get_menu(menu_id)
 
+    async def read_obj(self, menu_id: str):
+        return await self.menu_dao.get_menu_obj(menu_id)
+
     async def read_all(self):
         return await self.menu_dao.get_all_menus()
 
@@ -23,7 +26,7 @@ class MenuService:
         return await self.menu_dao.update_menu(menu_id, title, description)
 
     async def delete(self, menu: Menu):
-        for submenu in menu.submenus:
+        submenus = await self.submenu_service.read_by_menu_id(menu.id)
+        for submenu in submenus:
             await self.submenu_service.delete(submenu)
-
         return await self.menu_dao.delete_menu_by_obj(menu)

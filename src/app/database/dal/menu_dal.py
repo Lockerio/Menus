@@ -1,7 +1,7 @@
-from sqlalchemy import select
+from sqlalchemy import select, func, distinct
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import Menu
+from app.database.models import Menu, Submenu, Dish
 
 
 class MenuDAO:
@@ -14,18 +14,37 @@ class MenuDAO:
         await self.db_session.flush()
         return menu
 
-    async def get_menu(self, menu_id: str):
+    async def get_menu_obj(self, menu_id: str):
         query = select(Menu).where(Menu.id == menu_id)
         res = await self.db_session.execute(query)
-        group_row = res.fetchone()
-        if group_row is not None:
-            return group_row[0]
+        return res.scalars().first()
+
+    async def get_menu(self, menu_id: str):
+        query = (
+            select(
+                Menu.id,
+                Menu.title,
+                Menu.description,
+                func.count(distinct(Submenu.id)).label("submenus_count"),
+                func.count(distinct(Dish.id)).label("dishes_count"),
+            )
+            .outerjoin(
+                Submenu,
+                Menu.id == Submenu.menu_id,
+            )
+            .outerjoin(Dish, Submenu.id == Dish.submenu_id)
+            .where(Menu.id == menu_id)
+            .group_by(Menu.id)
+        )
+        menu = await self.db_session.execute(query)
+        return menu.first()
 
     async def get_all_menus(self):
-        return await self.db_session.execute(select(Menu)).scalars().all()
+        res = await self.db_session.execute(select(Menu))
+        return res.scalars().all()
 
     async def update_menu(self, menu_id: str, title: str, description: str):
-        menu = await self.get_menu(menu_id)
+        menu = await self.get_menu_obj(menu_id)
         if menu:
             menu.title = title
             menu.description = description
