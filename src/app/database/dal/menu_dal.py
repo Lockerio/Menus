@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, distinct
+from sqlalchemy import select, func, distinct, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Menu, Submenu, Dish
@@ -52,14 +52,5 @@ class MenuDAO:
         return menu
 
     async def delete_menu(self, menu_id: str):
-        menu = await self.get_menu(menu_id)
-        if menu:
-            await self.db_session.delete(menu)
-            await self.db_session.flush()
-        return menu
-
-    async def delete_menu_by_obj(self, menu: Menu):
-        if menu:
-            await self.db_session.delete(menu)
-            await self.db_session.flush()
-        return menu
+        query = delete(Menu).where(Menu.id == menu_id)
+        await self.db_session.execute(query)

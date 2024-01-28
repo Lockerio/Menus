@@ -25,8 +25,8 @@ class MenuService:
     async def update(self, title: str, description: str, menu_id: str):
         return await self.menu_dao.update_menu(menu_id, title, description)
 
-    async def delete(self, menu: Menu):
-        submenus = await self.submenu_service.read_by_menu_id(menu.id)
+    async def delete(self, menu_id: str):
+        submenus = await self.submenu_service.read_by_menu_id(menu_id)
         for submenu in submenus:
-            await self.submenu_service.delete(submenu)
-        return await self.menu_dao.delete_menu_by_obj(menu)
+            await self.submenu_service.delete(submenu.id)
+        return await self.menu_dao.delete_menu(menu_id)

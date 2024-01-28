@@ -24,10 +24,10 @@ async def create_dish(
         dish_service = DishService(db)
 
         try:
+            submenus = await submenu_service.read_submenu_ids_by_menu_id(target_menu_id)
             submenu = await submenu_service.read(target_submenu_id)
-            submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
-            if submenu in submenus:
+            if submenu.id in submenus:
                 dish = await dish_service.create(
                     submenu_data.title,
                     submenu_data.description,
@@ -112,9 +112,9 @@ async def update_dish(
 ):
     async with db.begin():
         dish_service = DishService(db)
-        dishes = await dish_service.read_by_submenu_id(target_submenu_id)
 
         try:
+            dishes = await dish_service.read_by_submenu_id(target_submenu_id)
             dish = await dish_service.read(target_dish_id)
         except:
             raise HTTPException(status_code=500, detail="Something went wrong")
@@ -142,16 +142,16 @@ async def delete_dish(
 ):
     async with db.begin():
         dish_service = DishService(db)
-        dishes = await dish_service.read_by_submenu_id(target_submenu_id)
 
         try:
+            dishes = await dish_service.read_by_submenu_id(target_submenu_id)
             dish = await dish_service.read(target_dish_id)
         except:
             raise HTTPException(status_code=500, detail="Something went wrong")
 
         if dish in dishes:
             try:
-                await dish_service.delete(dish)
+                await dish_service.delete(dish.id)
             except AttributeError:
                 raise HTTPException(status_code=500, detail="Something went wrong")
 

@@ -30,5 +30,5 @@ class DishService:
     async def update(self, title: str, description: str, price: str, dish_id: str):
         return await self.dish_dao.update_dish(title, description, price, dish_id)
 
-    async def delete(self, dish: Dish):
-        return await self.dish_dao.delete_dish_by_obj(dish)
+    async def delete(self, dish_id: str):
+        return await self.dish_dao.delete_dish(dish_id)

@@ -1,7 +1,7 @@
-from sqlalchemy import select
+from sqlalchemy import select, distinct, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import Submenu
+from app.database.models import Submenu, Dish
 
 
 class SubmenuDAO:
@@ -15,11 +15,26 @@ class SubmenuDAO:
         return submenu
 
     async def get_submenu(self, submenu_id: str):
+        query = (
+            select(
+                Submenu.id,
+                Submenu.title,
+                Submenu.description,
+                Submenu.menu_id,
+                func.count(distinct(Dish.id)).label("dishes_count"),
+            )
+            .outerjoin(Dish, Submenu.id == Dish.submenu_id)
+            .where(Submenu.id == submenu_id)
+            .group_by(Submenu.id)
+        )
+
+        submenu = await self.db_session.execute(query)
+        return submenu.first()
+
+    async def get_submenu_obj(self, submenu_id: str):
         query = select(Submenu).where(Submenu.id == submenu_id)
         res = await self.db_session.execute(query)
-        group_row = res.fetchone()
-        if group_row is not None:
-            return group_row[0]
+        return res.scalars().first()
 
     async def get_all_submenus(self):
         res = await self.db_session.execute(select(Submenu))
@@ -30,8 +45,13 @@ class SubmenuDAO:
         res = await self.db_session.execute(query)
         return res.scalars().all()
 
+    async def get_submenu_ids_by_menu_id(self, menu_id: str):
+        query = select(Submenu.id).where(Submenu.menu_id == menu_id)
+        res = await self.db_session.execute(query)
+        return res.scalars().all()
+
     async def update_submenu(self, title: str, description: str, submenu_id: str):
-        submenu = await self.get_submenu(submenu_id)
+        submenu = await self.get_submenu_obj(submenu_id)
         if submenu:
             submenu.title = title
             submenu.description = description
@@ -39,14 +59,5 @@ class SubmenuDAO:
         return submenu
 
     async def delete_submenu(self, submenu_id: str):
-        submenu = await self.get_submenu(submenu_id)
-        if submenu:
-            await self.db_session.delete(submenu)
-            await self.db_session.commit()
-        return submenu
-
-    async def delete_submenu_by_obj(self, submenu: Submenu):
-        if submenu:
-            await self.db_session.delete(submenu)
-            await self.db_session.commit()
-        return submenu
+        query = delete(Submenu).where(Submenu.id == submenu_id)
+        await self.db_session.execute(query)

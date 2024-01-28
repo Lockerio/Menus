@@ -29,11 +29,17 @@ class SubmenuService:
     async def read_by_menu_id(self, menu_id: str):
         return await self.submenu_dao.get_submenu_by_menu_id(menu_id)
 
+    async def read_obj(self, submenu_id: str):
+        return await self.submenu_dao.get_submenu_obj(submenu_id)
+
+    async def read_submenu_ids_by_menu_id(self, menu_id: str):
+        return await self.submenu_dao.get_submenu_ids_by_menu_id(menu_id)
+
     async def update(self, title: str, description: str, submenu_id: str):
         return await self.submenu_dao.update_submenu(title, description, submenu_id)
 
-    async def delete(self, submenu: Submenu):
-        dishes = await self.dish_service.read_by_submenu_id(submenu.id)
+    async def delete(self, submenu_id: str):
+        dishes = await self.dish_service.read_by_submenu_id(submenu_id)
         for dish in dishes:
-            await self.dish_service.delete(dish)
-        return await self.submenu_dao.delete_submenu_by_obj(submenu)
+            await self.dish_service.delete(dish.id)
+        return await self.submenu_dao.delete_submenu(submenu_id)

@@ -71,20 +71,20 @@ async def read_submenu(
 ):
     async with db.begin():
         submenu_service = SubmenuService(db)
-        submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
         try:
+            submenus = await submenu_service.read_submenu_ids_by_menu_id(target_menu_id)
             submenu = await submenu_service.read(target_submenu_id)
         except:
             raise HTTPException(status_code=500, detail="Something went wrong")
 
-    if submenu in submenus:
+    if submenu and submenu.id in submenus:
         return JSONResponse({
             "id": str(submenu.id),
             "title": submenu.title,
             "description": submenu.description,
             "menu_id": str(submenu.menu_id),
-            "dishes_count": len(submenu.dishes)
+            "dishes_count": submenu.dishes_count
         })
 
     raise HTTPException(status_code=404, detail="submenu not found")
@@ -99,14 +99,14 @@ async def update_submenu(
 ):
     async with db.begin():
         submenu_service = SubmenuService(db)
-        submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
         try:
+            submenus = await submenu_service.read_submenu_ids_by_menu_id(target_menu_id)
             submenu = await submenu_service.read(target_submenu_id)
         except:
             raise HTTPException(status_code=500, detail="Something went wrong")
 
-        if submenu in submenus:
+        if submenu.id in submenus:
             submenu = await submenu_service.update(menu_data.title, menu_data.description, target_submenu_id)
 
             return JSONResponse({
@@ -127,16 +127,16 @@ async def delete_submenu(
 ):
     async with db.begin():
         submenu_service = SubmenuService(db)
-        submenus = await submenu_service.read_by_menu_id(target_menu_id)
 
         try:
+            submenus = await submenu_service.read_submenu_ids_by_menu_id(target_menu_id)
             submenu = await submenu_service.read(target_submenu_id)
         except:
             raise HTTPException(status_code=500, detail="Something went wrong")
 
-        if submenu in submenus:
+        if submenu.id in submenus:
             try:
-                await submenu_service.delete(submenu)
+                await submenu_service.delete(submenu.id)
             except AttributeError:
                 raise HTTPException(status_code=500, detail="Something went wrong")
 
